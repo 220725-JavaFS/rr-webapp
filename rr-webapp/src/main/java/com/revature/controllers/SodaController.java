@@ -13,25 +13,24 @@ import javax.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revature.models.Soda;
 import com.revature.services.SodaService;
+import com.ricketts.models.Table;
 
 public class SodaController extends HttpServlet{
 	
 	SodaService sodaService = new SodaService();
 	ObjectMapper objectMapper = new ObjectMapper();
 	Soda soda = new Soda();
+	Table table = new Table();
 	
 	protected void doGet (HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException{
-		
 		String URI = request.getRequestURI();
 		System.out.println(URI);
 		
 		String[] urlSections = URI.split("/");
 		
 		if(urlSections.length==3) {
-		
-		
-			List<Soda> list = sodaService.getAllSoda();
+			List<Soda> list = sodaService.getAllSoda(table);
 			
 			String json = objectMapper.writeValueAsString(list);
 			System.out.println(json);
@@ -48,7 +47,7 @@ public class SodaController extends HttpServlet{
 			try {
 				soda.setSodaId(Integer.valueOf(urlSections[3]));
 				
-				List <Soda> list1 = sodaService.getSodabyId(soda);
+				List <Soda> list1 = sodaService.getSodabyId(soda, table);
 				
 				PrintWriter printWriter = response.getWriter();
 				
@@ -86,14 +85,13 @@ public class SodaController extends HttpServlet{
 		
 		Soda soda = objectMapper.readValue(json, Soda.class);
 				
-		sodaService.createNewSoda(soda);
+		sodaService.createNewSoda(soda, table);
 		
 		response.setStatus(201);		
 	}
 	
 	protected void doPut (HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException{
-		
 		StringBuilder sb = new StringBuilder();
 		
 		BufferedReader reader = request.getReader();
@@ -110,7 +108,7 @@ public class SodaController extends HttpServlet{
 		
 		Soda soda = objectMapper.readValue(json, Soda.class);
 				
-		sodaService.updateSodaInfo(soda);
+		sodaService.updateSodaInfo(soda, table);
 		
 		response.setStatus(202);
 		
@@ -121,7 +119,6 @@ public class SodaController extends HttpServlet{
 	protected void doDelete (HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException{
 		StringBuilder sb = new StringBuilder();
-		
 		BufferedReader reader = request.getReader();
 		
 		String line = reader.readLine();
@@ -136,7 +133,7 @@ public class SodaController extends HttpServlet{
 		
 		Soda soda = objectMapper.readValue(json, Soda.class);
 				
-		sodaService.removeSoda(soda);
+		sodaService.removeSoda(soda, table);
 		
 		response.setStatus(202);		
 	}

@@ -17,7 +17,7 @@
   
   <servlet-mapping>
   <servlet-name>SodaController</servlet-name>
-  <url-pattern>/soda/*</url-pattern>
+  <url-pattern>/sodas/*</url-pattern>
   </servlet-mapping>
   
 </web-app>

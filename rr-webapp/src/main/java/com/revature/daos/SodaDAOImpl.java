@@ -10,43 +10,48 @@ import java.util.List;
 
 import com.revature.models.Soda;
 import com.revature.utils.ConnectionUtil;
+import com.ricketts.daos.ObjectDAO;
+import com.ricketts.daos.ObjectDAOImpl;
+import com.ricketts.daos.TableDAO;
+import com.ricketts.daos.TableDAOImpl;
+import com.ricketts.mappers.Mapper;
+import com.ricketts.mappers.SqlMapper;
+import com.ricketts.models.Table;
+import com.ricketts.services.OrmServices;
 
 public class SodaDAOImpl implements SodaDAO {
-
+	OrmServices orm = new OrmServices();
+	Mapper m = new SqlMapper();
+	
 	@Override
-	public void createSoda(Soda soda) {
-		try(Connection conn = ConnectionUtil.getConnection()){
-			String sql = "INSERT INTO sodas (brand, flavor, quantity, ounces_per_can, price)"
-					+ "VALUES(?, ?, ?, ?, ?);";
-			PreparedStatement statement = conn.prepareStatement(sql);
-			
-			int count = 0; 
-			statement.setString(++count, soda.getBrand());
-			statement.setString(++count, soda.getFlavor());
-			statement.setInt(++count, soda.getQuantity());
-			statement.setDouble(++count, soda.getOuncesPerCan());
-			statement.setDouble(++count, soda.getPrice());
-			
-			statement.execute();
-			
-		}
-		catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
+	public void createSoda(Soda soda, Table table) {
+		orm.begin("sodas", table);
+		orm.create(soda, table);
 	}
 		
+	@Override
+	public void changeSodaInfo(Soda soda, Table table) {
+		orm.begin("sodas", table);
+		orm.update(soda, table);
+		
+	}
+
+	@Override
+	public void deleteSoda(Soda soda, Table table) {
+		orm.begin("sodas", table);
+		orm.delete(soda, table);
+	}
 	
 
 	@Override
-	public List<Soda> displayAllSoda() {
+	public List<Soda> displayAllSoda(Table table) {
+		orm.begin("sodas", table);
 		try(Connection conn = ConnectionUtil.getConnection()){
-			String sql = "SELECT * FROM sodas;";
+			String selectAll = m.sqlSelectAllStmt(table);
 			Statement statement = conn.createStatement();
-			ResultSet result = statement.executeQuery(sql);
+			ResultSet result = statement.executeQuery(selectAll);
 			
 			List<Soda> sodaList = new LinkedList <>();
-
 			while(result.next()) { 
 				Soda soda = new Soda(
 					result.getInt("soda_id"),
@@ -67,26 +72,26 @@ public class SodaDAOImpl implements SodaDAO {
 	}
 
 	
-	 public List<Soda> displaySodaById(Soda soda) {
+	 public List<Soda> displaySodaById(Soda soda, Table table) {
+		 orm.begin("sodas", table);
 		try(Connection conn = ConnectionUtil.getConnection()){
-			String sql = "SELECT * FROM sodas WHERE soda_id = "+soda.getSodaId()+";";
+			String selectById = m.sqlSelectByIdStmt(soda, table);
 			Statement statement = conn.createStatement();
-			ResultSet result = statement.executeQuery(sql);
+			ResultSet result = statement.executeQuery(selectById);
 			
-			List<Soda> sodaList1 = new LinkedList <>();
+			List<Soda> sList = new LinkedList <>();
 
 			while(result.next()) { 
-				Soda soda1 = new Soda(
+				Soda s = new Soda(
 					result.getInt("soda_id"),
 					result.getString("brand"),
 					result.getString("flavor"),
 					result.getInt("quantity"),
 					result.getDouble("ounces_per_can"),
 					result.getDouble("price"));
-			
-				sodaList1.add(soda1);
+				sList.add(s);
 			}
-			return sodaList1;
+			return sList;
 		}//try 
 		catch(SQLException e) {
 			e.printStackTrace();
@@ -94,46 +99,6 @@ public class SodaDAOImpl implements SodaDAO {
 		return null;
 	}
 
-	@Override
-	public void changeSodaInfo(Soda soda) {
-		try(Connection conn = ConnectionUtil.getConnection()){
-			String sql = "UPDATE sodas SET brand = ?, flavor = ?, quantity = ?, ounces_per_can = ?, "
-					+ "price = ?  WHERE soda_id = ?;";
-			PreparedStatement statement = conn.prepareStatement(sql);
-			
-			int count = 0; 
-			statement.setString(++count, soda.getBrand());
-			statement.setString(++count, soda.getFlavor());
-			statement.setInt(++count, soda.getQuantity());
-			statement.setDouble(++count, soda.getOuncesPerCan());
-			statement.setDouble(++count, soda.getPrice());
-			statement.setInt(++count, soda.getSodaId());
-			statement.execute();
-			
-		}
-		catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
-	@Override
-	public void deleteSoda(Soda soda) {
-		try(Connection conn = ConnectionUtil.getConnection()){
-			String sql = "DELETE FROM sodas WHERE soda_id = ?;";
-			PreparedStatement statement = conn.prepareStatement(sql);
-			
-			int count = 0; 
-			statement.setInt(++count, soda.getSodaId());
-			statement.execute();
-			
-			System.out.println("employee removed!");
-		}
-		catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
-	}
 
 	
 	
